@@ -17,6 +17,7 @@
     (let ((input-datas (split-string (buffer-string) "\n" t)))
       (with-temp-file "mini-wubi-rules.el"
 	(message "Converting...")
+	(insert ";; -*-no-byte-compile: t; -*-\n")
 	(insert "(quail-define-rules\n")
 	(dolist (output-line-data (mapcar 'mini-wubi-data-line-to-quail-rules-line input-datas))
 	  (insert (format "(%-6S %S)" (car output-line-data) (cdr output-line-data)))

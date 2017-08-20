@@ -49,8 +49,7 @@
       (progn
 	(message "Loading mini-wubi rules...")
 	(load "mini-wubi-rules")
-	(setq mini-wubi-rules-loaded-flag t)
-	)))
+	(setq mini-wubi-rules-loaded-flag t))))
 
 (provide 'mini-wubi)
 ;;; mini-wubi.el ends here

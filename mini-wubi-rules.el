@@ -1,3 +1,4 @@
+;; -*-no-byte-compile: t; -*-
 (quail-define-rules
 ("a"    ["工" "戈"])
 ("aa"   ["式"])
