@@ -1,6 +1,41 @@
 ;;; mini-wubi.el  -*- coding: utf-8 -*-
 (require 'quail)
 
+(defvar mini-wubi-rules-loaded-flag nil "flag that tell whether mini-wubi-rules loaed or not.")
+
+(defconst mini-wubi-lang-states '("cn" "eng"))
+
+(defvar mini-wubi-current-lang-state (car mini-wubi-lang-states))
+
+(defvar mini-wubi-eng-quail-map '(nil (nil nil)))
+(defvar mini-wubi-cn-quail-map nil)
+
+(defun mini-wubi-toggle-lang-state ()
+  (interactive)
+  (if (equal
+       mini-wubi-current-lang-state
+       (car mini-wubi-lang-states))
+      (progn
+        (setq mini-wubi-current-lang-state (cdr mini-wubi-lang-states))
+        (quail-install-map mini-wubi-eng-quail-map)
+        (message "input method in english state now!"))
+    (progn
+      (setq mini-wubi-current-lang-state (car mini-wubi-lang-states))
+      (quail-install-map mini-wubi-cn-quail-map)
+      (message "input method in chinese state now!"))))
+
+(defun mini-wubi-init ()
+  "call this function to init min-wubi,
+   be sure that quail current package is mini-wubi"
+  (if (and
+       (equal (quail-name) mini-wubi-name)
+       (not mini-wubi-rules-loaded-flag))
+      (progn
+	      (message "Loading mini-wubi rules...")
+	      (load "mini-wubi-rules")
+	      (setq mini-wubi-rules-loaded-flag t)
+        (setq mini-wubi-cn-quail-map (quail-map)))))
+
 (defconst mini-wubi-name "mini-wubi")
 (defconst mini-wubi-lang "euc-cn")
 (defconst mini-wubi-title "迷雾")
@@ -37,19 +72,6 @@
  mini-wubi-upadte-translation-fn
  mini-wubi-conversion-keys
  mini-wubi-simple)
-
-(defvar mini-wubi-rules-loaded-flag nil "flag that tell whether mini-wubi-rules loaed or not.")
-
-(defun mini-wubi-load-rules ()
-  "call this function to load min-wubi rules mannualy,
-   be sure that quail current package is mini-wubi"
-  (if (and
-       (equal (quail-name) mini-wubi-name)
-       (not mini-wubi-rules-loaded-flag))
-      (progn
-	(message "Loading mini-wubi rules...")
-	(load "mini-wubi-rules")
-	(setq mini-wubi-rules-loaded-flag t))))
 
 (provide 'mini-wubi)
 ;;; mini-wubi.el ends here
