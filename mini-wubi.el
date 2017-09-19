@@ -30,13 +30,47 @@
 (defvar mini-wubi-rules-loaded-flag nil "flag that tell whether mini-wubi-rules loaed or not.")
 
 (defconst mini-wubi-lang-states '("cn" "eng"))
+(defconst mini-wubi-width-states '("half" "full"))
 
 (defvar mini-wubi-current-lang-state (car mini-wubi-lang-states))
+(defvar mini-wubi-current-width-state (car mini-wubi-width-states))
 
 (defvar mini-wubi-eng-quail-map '(nil (nil nil)))
 (defvar mini-wubi-cn-quail-map nil)
 
-(defun mini-wubi-toggle-lang-state ()
+;; use M-x sort-lines to set the order of the list
+(defvar mini-wubi-width-characters-alist
+  '(
+    ("!" "！")
+    ("#" "＃")
+    ("$" "￥")
+    ("%" "％")
+    ("&" "＆")
+    ("(" "（")
+    (")" "）")
+    ("*" "×")
+    ("+" "＋")
+    ("," "，")
+    ("-" "－")
+    ("." "。")
+    ("/" "、")
+    (":" "：")
+    (";" "；")
+    ("<" "《")
+    ("=" "＝")
+    (">" "》")
+    ("?" "？")
+    ("@" "＠")
+    ("[" "［")
+    ("\\" "＼")
+    ("]" "］")
+    ("{" "｛")
+    ("|" "｜")
+    ("}" "｝")
+    ("~" "～")
+    ))
+
+(defun mini-wubi-switch-lang-state ()
   (interactive)
   (if (equal
        mini-wubi-current-lang-state
@@ -50,6 +84,48 @@
       (quail-install-map mini-wubi-cn-quail-map)
       (message "input method in chinese state now!"))))
 
+(defun mini-wubi-activated ()
+  (and
+   current-input-method
+   (equal (quail-name) mini-wubi-name)))
+
+(defun mini-wubi-in-halfwidth ()
+  (equal
+   mini-wubi-current-width-state
+   (car mini-wubi-width-states)))
+
+(defun mini-wubi-in-fullwidth ()
+  (equal
+   mini-wubi-current-width-state
+   (cdr mini-wubi-width-states)))
+
+(defun mini-wubi-halfwidth-state ()
+  (car mini-wubi-width-states))
+
+(defun mini-wubi-fullwidth-state ()
+  (cdr mini-wubi-width-states))
+
+(defun mini-wubi-switch-character-width ()
+  (interactive)
+  (when (mini-wubi-activated)
+    (if (mini-wubi-in-halfwidth)
+        (progn
+          (mini-wubi-remap-character-width (mini-wubi-fullwidth-state))
+          (setq mini-wubi-current-width-state (mini-wubi-fullwidth-state)))
+      (progn
+        (mini-wubi-remap-character-width (mini-wubi-halfwidth-state))
+        (setq mini-wubi-current-width-state (mini-wubi-halfwidth-state))))))
+
+(defun mini-wubi-remap-character-width (char-width)
+  (mapcar (lambda (convert-char-map)
+            (let ((key (car convert-char-map))
+                  (trans (if (equal char-width (mini-wubi-halfwidth-state))
+                             (car convert-char-map)
+                           (cdr convert-char-map)))
+                  (map (quail-map)))
+              (quail-defrule-internal key trans map)))
+          mini-wubi-width-characters-alist))
+
 (defun mini-wubi-init ()
   "call this function to init min-wubi,
    be sure that quail current package is mini-wubi"
@@ -60,7 +136,10 @@
 	      (message "Loading mini-wubi rules...")
 	      (load "mini-wubi-rules")
 	      (setq mini-wubi-rules-loaded-flag t)
-        (setq mini-wubi-cn-quail-map (quail-map)))))
+        (setq mini-wubi-cn-quail-map (quail-map))
+        (if (mini-wubi-in-fullwidth)
+            (mini-wubi-remap-character-width (mini-wubi-fullwidth-state))
+          (mini-wubi-remap-character-width (mini-wubi-halfwidth-state))))))
 
 (defconst mini-wubi-name "mini-wubi")
 (defconst mini-wubi-lang "euc-cn")
