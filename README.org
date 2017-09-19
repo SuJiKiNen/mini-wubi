@@ -7,7 +7,7 @@ Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi inpu
 (setq default-input-method "mini-wubi")
 (defun my-toggle-input-method ()
   (interactive)
-  (mini-wubi-load-rules)
+  (mini-wubi-init)
   (toggle-input-method))
 (global-set-key (kbd "C-\\") 'my-toggle-input-method)
 #+END_SRC
@@ -15,8 +15,8 @@ Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi inpu
 * Why I use this?
 ~quail~ provided a good utility to remap physical keyborad layout to standard ~Qwerty~ keyborad.
 I use [[https://en.wikipedia.org/wiki/Dvorak_Simplified_Keyboard][dvorak layout]] for daily code typing,when I want to type some Chinese characters,I found
-it is annoying to switch layout between ~Dvorak~ and ~Qwerty~,even my keyborad is able to 
-switch layouts in a single one keypress,I don't use ~Dvorak layout~ to typing ~Wubi~,I consider 
+it is annoying to switch layout between ~Dvorak~ and ~Qwerty~,even my keyborad is able to
+switch layouts in a single one keypress,I don't use ~Dvorak layout~ to typing ~Wubi~,I consider
 changing the layout is unreasonable,so here is my setting for those people stick with my side.
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'quail-keyboard-layout-alist
