@@ -60,16 +60,6 @@
 (defvar mini-wubi-halfwidth-state-indicator "◑")
 (defvar mini-wubi-fullwidth-state-indicator "●")
 
-(defun mini-wubi-in-halfwidth ()
-  (equal
-   mini-wubi-current-width-state
-   (car mini-wubi-width-states)))
-
-(defun mini-wubi-in-fullwidth ()
-  (equal
-   mini-wubi-current-width-state
-   (cdr mini-wubi-width-states)))
-
 (defun mini-wubi-halfwidth-state ()
   (car mini-wubi-width-states))
 
@@ -81,6 +71,22 @@
 
 (defun mini-wubi-lang-eng-state ()
   (cdr mini-wubi-lang-states))
+
+(defun mini-wubi-in-halfwidth ()
+  (equal
+   mini-wubi-current-width-state
+   (car mini-wubi-width-states)))
+
+(defun mini-wubi-in-fullwidth ()
+  (equal
+   mini-wubi-current-width-state
+   (cdr mini-wubi-width-states)))
+
+(defun mini-wubi-in-lang-eng-state()
+  (equal mini-wubi-current-lang-state (mini-wubi-lang-eng-state)))
+
+(defun mini-wubi-in-lang-cn-state()
+  (equal mini-wubi-current-lang-state (mini-wubi-lang-cn-state)))
 
 (defun mini-wubi-current-lang-indicator (lang)
   (if (equal lang (mini-wubi-lang-eng-state))
@@ -145,18 +151,23 @@
    current-input-method
    (equal (quail-name) mini-wubi-name)))
 
+(defun mini-wubi-switch-to-lang-state(lang-state)
+  (if (equal lang-state (mini-wubi-lang-cn-state))
+      (progn
+        (setq mini-wubi-current-lang-state (mini-wubi-lang-cn-state))
+        (quail-install-map mini-wubi-cn-quail-map))
+    (progn
+      (setq mini-wubi-current-lang-state (mini-wubi-lang-eng-state))
+      (quail-install-map mini-wubi-eng-quail-map))))
+
 (defun mini-wubi-switch-lang-state ()
   (interactive)
-  (if (equal
-       mini-wubi-current-lang-state
-       (car mini-wubi-lang-states))
+  (if (mini-wubi-in-lang-cn-state)
       (progn
-        (setq mini-wubi-current-lang-state (cdr mini-wubi-lang-states))
-        (quail-install-map mini-wubi-eng-quail-map)
+        (mini-wubi-switch-to-lang-state (mini-wubi-lang-eng-state))
         (message "input method in english state now!"))
     (progn
-      (setq mini-wubi-current-lang-state (car mini-wubi-lang-states))
-      (quail-install-map mini-wubi-cn-quail-map)
+      (mini-wubi-switch-to-lang-state (mini-wubi-lang-cn-state))
       (message "input method in chinese state now!")))
   (mini-wubi-update-mode-line-indicator))
 
@@ -182,20 +193,35 @@
               (quail-defrule-internal key trans map)))
           mini-wubi-width-characters-alist))
 
-(defun mini-wubi-init ()
-  "call this function to init min-wubi,
+(defun mini-wubi-setup ()
+  "call this function to setup min-wubi,initialize or finalize settings
    be sure that quail current package is mini-wubi"
-  (when (and
-         (equal (quail-name) mini-wubi-name)
-         (not mini-wubi-rules-loaded-flag))
+  (if (mini-wubi-activated)
+      (progn
+        (when (not mini-wubi-rules-loaded-flag)
+          (message "Loading mini-wubi rules...")
+          (load "mini-wubi-rules")
+          (setq mini-wubi-rules-loaded-flag t))
+
+        ;; make all variables below buffer local
+        ;; the quail-current-package point to a quail-map need to make a copy
+        ;; otherwise other buffer' quail-curent-package will point to same quail-map
+        ;; modify one in a buffer will affect other's quail-map rule
+        (setq-local quail-current-package (copy-tree (quail-package "mini-wubi") t))
+        (make-local-variable 'mini-wubi-cn-quail-map)
+        (make-local-variable 'mini-wubi-eng-quail-map)
+        (make-local-variable 'mini-wubi-current-lang-state)
+        (make-local-variable 'mini-wubi-current-width-state)
+
+        (setq-local mini-wubi-cn-quail-map (quail-map))
+
+        (mini-wubi-switch-to-lang-state mini-wubi-current-lang-state)
+        (mini-wubi-remap-character-width mini-wubi-current-width-state))
     (progn
-	    (message "Loading mini-wubi rules...")
-	    (load "mini-wubi-rules")
-	    (setq mini-wubi-rules-loaded-flag t)
-      (setq mini-wubi-cn-quail-map (quail-map))
-      (if (mini-wubi-in-fullwidth)
-          (mini-wubi-remap-character-width (mini-wubi-fullwidth-state))
-        (mini-wubi-remap-character-width (mini-wubi-halfwidth-state))))))
+      (kill-local-variable 'mini-wubi-cn-quail-map)
+      (kill-local-variable 'mini-wubi-eng-quail-map)
+      (kill-local-variable 'mini-wubi-current-lang-state)
+      (kill-local-variable 'mini-wubi-current-width-state))))
 
 (quail-define-package
  mini-wubi-name
@@ -217,6 +243,7 @@
 
 (advice-add 'toggle-input-method :after
             'mini-wubi-update-mode-line-indicator)
+
 (provide 'mini-wubi)
 
 ;;; mini-wubi.el ends here
