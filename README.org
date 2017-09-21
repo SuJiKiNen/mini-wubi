@@ -7,7 +7,7 @@ Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi inpu
 (setq default-input-method "mini-wubi")
 (defun my-toggle-input-method ()
   (interactive)
-  (mini-wubi-init)
+  (mini-wubi-setup)
   (toggle-input-method))
 (global-set-key (kbd "C-\\") 'my-toggle-input-method)
 #+END_SRC
@@ -28,3 +28,12 @@ changing the layout is unreasonable,so here is my setting for those people stick
 				    "                              ")))
 (quail-set-keyboard-layout "dvorak")
 #+END_SRC
+
+* Document
+** Indicator Notation in mode line
+   | Notation | Meaning   |
+   |----------+-----------|
+   | $        | English   |
+   | ¥        | Chinese   |
+   | ◑        | Halfwidth |
+   | ●        | Fullwidth |
