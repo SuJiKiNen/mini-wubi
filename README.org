@@ -7,8 +7,8 @@ Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi inpu
 (setq default-input-method "mini-wubi")
 (defun my-toggle-input-method ()
   (interactive)
-  (mini-wubi-setup)
-  (toggle-input-method))
+  (toggle-input-method)
+  (mini-wubi-setup))
 (global-set-key (kbd "C-\\") 'my-toggle-input-method)
 #+END_SRC
 
