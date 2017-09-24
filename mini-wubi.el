@@ -31,7 +31,7 @@
 (defconst mini-wubi-name "mini-wubi")
 (defconst mini-wubi-lang "euc-cn")
 (defconst mini-wubi-title "迷雾")
-(defconst mini-wubi-doc-string "")
+(defconst mini-wubi-doc-string "A simple Chinese wubi input method inside Emacs")
 ;;quail define package settings,I don't like using defcustom
 (defvar mini-wubi-guidance t)
 (defvar mini-wubi-trans-keys
@@ -47,10 +47,10 @@
 (defvar mini-wubi-conversion-keys nil)
 (defvar mini-wubi-simple nil)
 
-(defvar mini-wubi-rules-loaded-flag nil "flag that tell whether mini-wubi-rules loaed or not.")
+(defvar mini-wubi-rules-loaded-flag nil "flag that tell whether mini-wubi-rules loaded or not.")
 
-(defconst mini-wubi-lang-states '("cn" "eng"))
-(defconst mini-wubi-width-states '("half" "full"))
+(defconst mini-wubi-lang-states '("cn" "eng") "mini wubi input states,cn is short for Chinese,eng for English")
+(defconst mini-wubi-width-states '("half" "full" "some characters width states,fullwidth or halfwidth"))
 
 (defvar mini-wubi-current-lang-state (car mini-wubi-lang-states))
 (defvar mini-wubi-current-width-state (car mini-wubi-width-states))
