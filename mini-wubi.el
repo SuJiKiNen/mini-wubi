@@ -4,7 +4,10 @@
 ;; Copyright (C) 2017 SuJiKiNen
 
 ;; Author: SuJiKiNen <SuJiKiNen@gmail.com>
+;; URL: https://github.com/SuJiKiNen/mini-wubi
 ;; Keywords:
+;; Version: 0.0.1
+;; Package-Requires: ((popup "0.5.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,12 +29,14 @@
 ;;; Code:
 
 (require 'quail)
+(require 'popup)
 
 ;; mini-wubi quail settings
 (defconst mini-wubi-name "mini-wubi")
 (defconst mini-wubi-lang "euc-cn")
 (defconst mini-wubi-title "迷雾")
 (defconst mini-wubi-doc-string "A simple Chinese wubi input method inside Emacs")
+(defconst mini-wubi-version "0.1.0")
 ;;quail define package settings,I don't like using defcustom
 (defvar mini-wubi-guidance t)
 (defvar mini-wubi-trans-keys
@@ -59,6 +64,18 @@
 (defvar mini-wubi-lang-cn-state-indicator "¥")
 (defvar mini-wubi-halfwidth-state-indicator "◑")
 (defvar mini-wubi-fullwidth-state-indicator "●")
+
+(defface mini-wubi-popup-selection-face
+  '((default :foreground "black")
+    (((class color) (min-colors 88) (background light))
+     (:background "cornsilk")))
+  "Face used for the selection in the popup.")
+
+(defface mini-wubi-popup-face
+  '((default :foreground "color-240")
+    (((class color) (min-colors 88) (background light))
+     (:background "light blue")))
+  "Face used for the popup background.")
 
 (defun mini-wubi-halfwidth-state ()
   (car mini-wubi-width-states))
@@ -223,6 +240,77 @@
       (kill-local-variable 'mini-wubi-current-lang-state)
       (kill-local-variable 'mini-wubi-current-width-state))))
 
+(defvar mini-wubi-popup nil)
+(defvar mini-wubi-popup-width 10)
+(defvar mini-wubi-popup-height 20)
+
+(defun mini-wubi-create-selectlist (&rest args)
+  (setq mini-wubi-popup (popup-create (point)
+                                      mini-wubi-popup-width
+                                      mini-wubi-popup-height
+                                      :around t
+                                      :scroll-bar t
+                                      :margin-left 1
+                                      :face 'mini-wubi-popup-face
+                                      :selection-face 'mini-wubi-popup-selection-face
+                                      )))
+
+(defun mini-wubi-show-selectlist (&rest args)
+  (popup-draw mini-wubi-popup))
+
+(defun mini-wubi-selectlist-item-format (name index)
+  name)
+
+(defun mini-wubi-selectlist-select (&optional index)
+  (when (and
+         index
+         (numberp index))
+    (popup-select mini-wubi-popup index)))
+
+(defun mini-wubi-selectlist-select-next ()
+  (when quail-current-translations
+      (let ((indices (car quail-current-translations)))
+        (mini-wubi-selectlist-select (car indices)))))
+
+(defun mini-wubi-selectlist-select-previous ()
+  (when quail-current-translations
+    (let ((indices (car quail-current-translations)))
+      (mini-wubi-selectlist-select (car indices)))))
+
+(defun mini-wubi-selectlist-last-selection ()
+  (when quail-current-translations
+    (let ((indices (car quail-current-translations)))
+      (mini-wubi-selectlist-select (car indices)))))
+
+(defun mini-wubi-update-selectlist (&rest args)
+  (if (and quail-current-translations
+	         (not (quail-deterministic)))
+	    (let* ((indices (car quail-current-translations))
+		         (cur (car indices))
+		         (start (nth 1 indices))
+		         (end (nth 2 indices))
+		         (idx start)
+             (mini-wubi-popup-list '()))
+	      (while (< idx end)
+	        (let ((trans (aref (cdr quail-current-translations) idx))
+		            (current-idx (if (= (- idx start) 9) 0
+				                       (1+ (- idx start)))))
+		        (or (stringp trans)
+		            (setq trans (string trans)))
+            (setq mini-wubi-popup-list (append
+                                        mini-wubi-popup-list
+                                        (list (popup-make-item (mini-wubi-selectlist-item-format trans
+                                                                                                 current-idx)
+                                                               :summary (number-to-string current-idx))))))
+		      (setq idx (1+ idx)))
+        (popup-set-list mini-wubi-popup mini-wubi-popup-list)
+        (mini-wubi-show-selectlist))
+    (popup-set-list mini-wubi-popup '())
+    (mini-wubi-show-selectlist)))
+
+(defun mini-wubi-hide-selectlist (&rest args)
+  (popup-delete mini-wubi-popup))
+
 (quail-define-package
  mini-wubi-name
  mini-wubi-lang
@@ -243,6 +331,18 @@
 
 (advice-add 'toggle-input-method :after
             'mini-wubi-update-mode-line-indicator)
+
+(advice-add 'quail-input-method :before
+            'mini-wubi-create-selectlist)
+
+(advice-add 'quail-update-translation :after
+            'mini-wubi-update-selectlist)
+
+(advice-add 'quail-input-method :after
+            'mini-wubi-hide-selectlist)
+
+(advice-add 'quail-update-guidance :after
+            'mini-wubi-selectlist-last-selection)
 
 (provide 'mini-wubi)
 
