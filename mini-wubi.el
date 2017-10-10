@@ -5,9 +5,9 @@
 
 ;; Author: SuJiKiNen <SuJiKiNen@gmail.com>
 ;; URL: https://github.com/SuJiKiNen/mini-wubi
-;; Keywords:
+;; Keywords:i18n
 ;; Version: 0.0.1
-;; Package-Requires: ((popup "0.5.3"))
+;; Package-Requires: ((emacs "24.4") (popup "0.5.3"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;;
+;; mini-wubi is a simple Chinese wubi input method inside Emacs.
 ;;
 
 ;;; Code:

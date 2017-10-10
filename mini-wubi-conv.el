@@ -4,7 +4,10 @@
 ;; Copyright (C) 2017 SuJiKiNen
 
 ;; Author: SuJiKiNen <SuJiKiNen@gmail.com>
-;; Keywords:
+;; URL: https://github.com/SuJiKiNen/mini-wubi
+;; Keywords:i18n
+;; Version: 0
+;; Package-Requires: ((emacs "24"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,16 +23,17 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
-
+;;
+;;convert raw wubi encode text file to quail rules.
 ;;
 
 ;;; Code:
 
-(defconst mini-wubi-rules-save-dir (file-name-directory (or load-file-name buffer-file-name)))
-(defconst mini-wubi-rules-filename (expand-file-name "mini-wubi-rules.el" (file-name-as-directory mini-wubi-rules-save-dir)))
+(defconst mini-wubi-conv-rules-save-dir (file-name-directory (or load-file-name buffer-file-name)))
+(defconst mini-wubi-conv-rules-filename (expand-file-name "mini-wubi-rules.el" (file-name-as-directory mini-wubi-conv-rules-save-dir)))
 
 ;;;###autoload
-(defun mini-wubi-data-line-to-quail-rules-line (string)
+(defun mini-wubi-conv-data-line-to-quail-rules-line (string)
   (let* ((input-line-data (split-string string " " t))
 	 (key-seqs (car input-line-data))
 	 (trans    (cdr input-line-data))
@@ -39,9 +43,9 @@
       (setq output-line-data (cons key-seqs (vconcat trans))))))
 
 ;;;###autoload
-(defun mini-wubi-convert-data-file-to-quail-rules-file ()
+(defun mini-wubi-conv-data-file-to-quail-rules-file ()
   (interactive)
-  (let ((default-directory mini-wubi-rules-save-dir))
+  (let ((default-directory mini-wubi-conv-rules-save-dir))
     (call-interactively
      (lambda (filename)
        (interactive "fFind wubi data file: ")
@@ -49,11 +53,11 @@
          (message "Reading %s ..." filename)
          (insert-file-contents filename)
          (let ((input-datas (split-string (buffer-string) "\n" t)))
-           (with-temp-file mini-wubi-rules-filename
-	           (message "Converting to %s ..." mini-wubi-rules-filename)
+           (with-temp-file mini-wubi-conv-rules-filename
+	           (message "Converting to %s ..." mini-wubi-conv-rules-filename)
 	           (insert ";; -*-no-byte-compile: t; -*-\n")
 	           (insert "(quail-define-rules\n")
-	           (dolist (output-line-data (mapcar 'mini-wubi-data-line-to-quail-rules-line input-datas))
+	           (dolist (output-line-data (mapcar 'mini-wubi-conv-data-line-to-quail-rules-line input-datas))
 	             (insert (format "(%-6S %S)" (car output-line-data) (cdr output-line-data)))
 	             (insert "\n"))
 	           (insert ")\n")))
