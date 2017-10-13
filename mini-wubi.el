@@ -67,16 +67,16 @@
 (defvar mini-wubi-fullwidth-state-indicator "●")
 
 (defface mini-wubi-popup-selection-face
-  '((default :foreground "black")
-    (((class color) (min-colors 88) (background light))
-     (:background "cornsilk")))
+  '((t (:inherit popup-menu-selection-face)))
   "Face used for the selection in the popup.")
 
 (defface mini-wubi-popup-face
-  '((default :foreground "color-240")
-    (((class color) (min-colors 88) (background light))
-     (:background "light blue")))
+  '((t (:inherit popup-menu-face)))
   "Face used for the popup background.")
+
+(defface mini-wubi-selection-index-face
+  '((t (:inherit popup-summary-face)))
+  "Face used for selection index")
 
 (defun mini-wubi-halfwidth-state ()
   (car mini-wubi-width-states))
@@ -254,6 +254,7 @@
                                       :margin-left 1
                                       :face 'mini-wubi-popup-face
                                       :selection-face 'mini-wubi-popup-selection-face
+                                      :summary-face 'mini-wubi-selection-index-face
                                       )))
 
 (defun mini-wubi-show-selectlist (&rest args)
