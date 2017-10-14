@@ -288,7 +288,6 @@
   (if (and quail-current-translations
 	         (not (quail-deterministic)))
 	    (let* ((indices (car quail-current-translations))
-		         (cur (car indices))
 		         (start (nth 1 indices))
 		         (end (nth 2 indices))
 		         (idx start)

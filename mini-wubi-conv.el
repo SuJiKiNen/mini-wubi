@@ -35,12 +35,11 @@
 ;;;###autoload
 (defun mini-wubi-conv-data-line-to-quail-rules-line (string)
   (let* ((input-line-data (split-string string " " t))
-	 (key-seqs (car input-line-data))
-	 (trans    (cdr input-line-data))
-	 (output-line-data))
+         (key-seqs (car input-line-data))
+         (trans    (cdr input-line-data)))
     (when (and key-seqs
-	       trans)
-      (setq output-line-data (cons key-seqs (vconcat trans))))))
+               trans)
+      (cons key-seqs (vconcat trans)))))
 
 ;;;###autoload
 (defun mini-wubi-conv-data-file-to-quail-rules-file ()
