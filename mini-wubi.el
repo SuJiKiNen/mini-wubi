@@ -295,8 +295,6 @@
  mini-wubi-simple)
 
 (defun mini-wubi-set-hooks ()
-  (advice-add 'toggle-input-method :after
-              'mini-wubi-update-mode-line-indicator)
 
   (advice-add 'quail-input-method :before
               'mini-wubi-create-selectlist)
@@ -311,7 +309,6 @@
               'mini-wubi-selectlist-last-selection))
 
 (defun mini-wubi-unset-hooks ()
-  (advice-remove 'toggle-input-method 'mini-wubi-update-mode-line-indicator)
 
   (advice-remove 'quail-input-method 'mini-wubi-create-selectlist)
 
@@ -323,8 +320,8 @@
 
 (defun mini-wubi-enable ()
   (progn
-    (setq default-input-method "mini-wubi")
-    (toggle-input-method)
+    (make-local-variable 'default-input-method)
+    (setq-local default-input-method "mini-wubi")
     (when (not mini-wubi-rules-loaded-flag)
       (message "Loading mini-wubi rules...")
       (load "mini-wubi-rules")
@@ -348,21 +345,29 @@
 
 (defun mini-wubi-disable ()
   (progn
-    (toggle-input-method)
+    (kill-local-variable 'default-input-method)
     (kill-local-variable 'mini-wubi-cn-quail-map)
     (kill-local-variable 'mini-wubi-eng-quail-map)
     (kill-local-variable 'mini-wubi-current-lang-state)
     (kill-local-variable 'mini-wubi-current-width-state)
+    (mini-wubi-update-mode-line-indicator)
     (mini-wubi-unset-hooks)))
 
 (define-minor-mode mini-wubi-mode mini-wubi-doc-string
   :lighter nil
   :keymap nil
   (if mini-wubi-mode
-      (mini-wubi-enable)
-    (mini-wubi-disable)))
+      (progn
+        (toggle-input-method)
+        (mini-wubi-enable))
+    (progn
+      (mini-wubi-disable)
+      (toggle-input-method))))
 
 (register-input-method "mini-wubi" "euc-cn" 'quail-use-package "mini-wubi" "A simple Chinese wubi input method inside Emacs")
+
+(add-hook 'input-method-activate-hook 'mini-wubi-enable)
+(add-hook 'input-method-deactivate-hook 'mini-wubi-disable)
 
 (provide 'mini-wubi)
 

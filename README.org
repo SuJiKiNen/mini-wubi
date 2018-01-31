@@ -1,9 +1,11 @@
 * Install
 Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi input method.
+you can treat it as a minor mode,called by =mini-wubi-mode=,
+or treat it as a input method, called by =toggle-input-method=.
 #+BEGIN_SRC emacs-lisp
-(add-to-list 'load-path "path/to/mini-wubi")
-(require 'mini-wubi)
-(global-set-key (kbd "C-\\") 'mini-wubi-mode)
+  (add-to-list 'load-path "path/to/mini-wubi")
+  (require 'mini-wubi)
+  (setq default-input-method "mini-wubi")
 #+END_SRC
 
 * Why I use this?
