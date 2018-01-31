@@ -3,13 +3,7 @@ Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi inpu
 #+BEGIN_SRC emacs-lisp
 (add-to-list 'load-path "path/to/mini-wubi")
 (require 'mini-wubi)
-(register-input-method "mini-wubi" "euc-cn" 'quail-use-package "mini-wubi" "A simple Chinese wubi input method inside Emacs")
-(setq default-input-method "mini-wubi")
-(defun my-toggle-input-method ()
-  (interactive)
-  (toggle-input-method)
-  (mini-wubi-setup))
-(global-set-key (kbd "C-\\") 'my-toggle-input-method)
+(global-set-key (kbd "C-\\") 'mini-wubi-mode)
 #+END_SRC
 
 * Why I use this?

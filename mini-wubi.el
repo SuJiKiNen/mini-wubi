@@ -164,11 +164,6 @@
     ("~" "～")
     ))
 
-(defun mini-wubi-activated ()
-  (and
-   current-input-method
-   (equal (quail-name) mini-wubi-name)))
-
 (defun mini-wubi-switch-to-lang-state(lang-state)
   (if (equal lang-state (mini-wubi-lang-cn-state))
       (progn
@@ -191,15 +186,14 @@
 
 (defun mini-wubi-switch-character-width ()
   (interactive)
-  (when (mini-wubi-activated)
-    (if (mini-wubi-in-halfwidth)
-        (progn
-          (mini-wubi-remap-character-width (mini-wubi-fullwidth-state))
-          (setq mini-wubi-current-width-state (mini-wubi-fullwidth-state)))
+  (if (mini-wubi-in-halfwidth)
       (progn
-        (mini-wubi-remap-character-width (mini-wubi-halfwidth-state))
-        (setq mini-wubi-current-width-state (mini-wubi-halfwidth-state))))
-    (mini-wubi-update-mode-line-indicator)))
+        (mini-wubi-remap-character-width (mini-wubi-fullwidth-state))
+        (setq mini-wubi-current-width-state (mini-wubi-fullwidth-state)))
+    (progn
+      (mini-wubi-remap-character-width (mini-wubi-halfwidth-state))
+      (setq mini-wubi-current-width-state (mini-wubi-halfwidth-state))))
+  (mini-wubi-update-mode-line-indicator))
 
 (defun mini-wubi-remap-character-width (char-width)
   (mapcar (lambda (convert-char-map)
@@ -210,36 +204,6 @@
                   (map (quail-map)))
               (quail-defrule-internal key trans map)))
           mini-wubi-width-characters-alist))
-
-(defun mini-wubi-setup ()
-  "call this function to setup min-wubi,initialize or finalize settings
-   be sure that quail current package is mini-wubi"
-  (if (mini-wubi-activated)
-      (progn
-        (when (not mini-wubi-rules-loaded-flag)
-          (message "Loading mini-wubi rules...")
-          (load "mini-wubi-rules")
-          (setq mini-wubi-rules-loaded-flag t))
-
-        ;; make all variables below buffer local
-        ;; the quail-current-package point to a quail-map need to make a copy
-        ;; otherwise other buffer' quail-curent-package will point to same quail-map
-        ;; modify one in a buffer will affect other's quail-map rule
-        (setq-local quail-current-package (copy-tree (quail-package "mini-wubi") t))
-        (make-local-variable 'mini-wubi-cn-quail-map)
-        (make-local-variable 'mini-wubi-eng-quail-map)
-        (make-local-variable 'mini-wubi-current-lang-state)
-        (make-local-variable 'mini-wubi-current-width-state)
-
-        (setq-local mini-wubi-cn-quail-map (quail-map))
-
-        (mini-wubi-switch-to-lang-state mini-wubi-current-lang-state)
-        (mini-wubi-remap-character-width mini-wubi-current-width-state))
-    (progn
-      (kill-local-variable 'mini-wubi-cn-quail-map)
-      (kill-local-variable 'mini-wubi-eng-quail-map)
-      (kill-local-variable 'mini-wubi-current-lang-state)
-      (kill-local-variable 'mini-wubi-current-width-state))))
 
 (defvar mini-wubi-popup nil)
 (defvar mini-wubi-popup-width 10)
@@ -330,20 +294,75 @@
  mini-wubi-conversion-keys
  mini-wubi-simple)
 
-(advice-add 'toggle-input-method :after
-            'mini-wubi-update-mode-line-indicator)
+(defun mini-wubi-set-hooks ()
+  (advice-add 'toggle-input-method :after
+              'mini-wubi-update-mode-line-indicator)
 
-(advice-add 'quail-input-method :before
-            'mini-wubi-create-selectlist)
+  (advice-add 'quail-input-method :before
+              'mini-wubi-create-selectlist)
 
-(advice-add 'quail-update-translation :after
-            'mini-wubi-update-selectlist)
+  (advice-add 'quail-update-translation :after
+              'mini-wubi-update-selectlist)
 
-(advice-add 'quail-input-method :after
-            'mini-wubi-hide-selectlist)
+  (advice-add 'quail-input-method :after
+              'mini-wubi-hide-selectlist)
 
-(advice-add 'quail-update-guidance :after
-            'mini-wubi-selectlist-last-selection)
+  (advice-add 'quail-update-guidance :after
+              'mini-wubi-selectlist-last-selection))
+
+(defun mini-wubi-unset-hooks ()
+  (advice-remove 'toggle-input-method 'mini-wubi-update-mode-line-indicator)
+
+  (advice-remove 'quail-input-method 'mini-wubi-create-selectlist)
+
+  (advice-remove 'quail-update-translation 'mini-wubi-update-selectlist)
+
+  (advice-remove 'quail-input-method 'mini-wubi-hide-selectlist)
+
+  (advice-remove 'quail-update-guidance 'mini-wubi-selectlist-last-selection))
+
+(defun mini-wubi-enable ()
+  (progn
+    (setq default-input-method "mini-wubi")
+    (toggle-input-method)
+    (when (not mini-wubi-rules-loaded-flag)
+      (message "Loading mini-wubi rules...")
+      (load "mini-wubi-rules")
+      (setq mini-wubi-rules-loaded-flag t))
+
+    ;; make all variables below buffer local
+    ;; the quail-current-package point to a quail-map need to make a copy
+    ;; otherwise other buffer' quail-curent-package will point to same quail-map
+    ;; modify one in a buffer will affect other's quail-map rule
+    (setq-local quail-current-package (copy-tree (quail-package "mini-wubi") t))
+    (make-local-variable 'mini-wubi-cn-quail-map)
+    (make-local-variable 'mini-wubi-eng-quail-map)
+    (make-local-variable 'mini-wubi-current-lang-state)
+    (make-local-variable 'mini-wubi-current-width-state)
+    (setq-local mini-wubi-cn-quail-map (quail-map))
+
+    (mini-wubi-switch-to-lang-state mini-wubi-current-lang-state)
+    (mini-wubi-remap-character-width mini-wubi-current-width-state)
+    (mini-wubi-update-mode-line-indicator)
+    (mini-wubi-set-hooks)))
+
+(defun mini-wubi-disable ()
+  (progn
+    (toggle-input-method)
+    (kill-local-variable 'mini-wubi-cn-quail-map)
+    (kill-local-variable 'mini-wubi-eng-quail-map)
+    (kill-local-variable 'mini-wubi-current-lang-state)
+    (kill-local-variable 'mini-wubi-current-width-state)
+    (mini-wubi-unset-hooks)))
+
+(define-minor-mode mini-wubi-mode mini-wubi-doc-string
+  :lighter nil
+  :keymap nil
+  (if mini-wubi-mode
+      (mini-wubi-enable)
+    (mini-wubi-disable)))
+
+(register-input-method "mini-wubi" "euc-cn" 'quail-use-package "mini-wubi" "A simple Chinese wubi input method inside Emacs")
 
 (provide 'mini-wubi)
 
