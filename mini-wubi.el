@@ -322,7 +322,7 @@
   (progn
     (make-local-variable 'default-input-method)
     (setq-local default-input-method "mini-wubi")
-    (when (not mini-wubi-rules-loaded-flag)
+    (unless mini-wubi-rules-loaded-flag
       (message "Loading mini-wubi rules...")
       (load "mini-wubi-rules")
       (setq mini-wubi-rules-loaded-flag t))
