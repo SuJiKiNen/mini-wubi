@@ -66,6 +66,8 @@
 (defvar mini-wubi-halfwidth-state-indicator "◑")
 (defvar mini-wubi-fullwidth-state-indicator "●")
 
+(defvar mini-wubi-show-selections-with-frame t "whether to use a frame to show selections under point")
+
 (defface mini-wubi-popup-selection-face
   '((t (:inherit popup-menu-selection-face)))
   "Face used for the selection in the popup.")
@@ -341,7 +343,9 @@
     (mini-wubi-switch-to-lang-state mini-wubi-current-lang-state)
     (mini-wubi-remap-character-width mini-wubi-current-width-state)
     (mini-wubi-update-mode-line-indicator)
-    (mini-wubi-set-hooks)))
+
+    (when mini-wubi-show-selections-with-frame
+      (mini-wubi-set-hooks))))
 
 (defun mini-wubi-disable ()
   (progn
@@ -351,7 +355,9 @@
     (kill-local-variable 'mini-wubi-current-lang-state)
     (kill-local-variable 'mini-wubi-current-width-state)
     (mini-wubi-update-mode-line-indicator)
-    (mini-wubi-unset-hooks)))
+
+    (when mini-wubi-show-selections-with-frame
+      (mini-wubi-unset-hooks))))
 
 (define-minor-mode mini-wubi-mode mini-wubi-doc-string
   :lighter nil
