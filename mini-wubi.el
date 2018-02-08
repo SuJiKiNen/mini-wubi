@@ -321,9 +321,7 @@
   (advice-remove 'quail-update-guidance 'mini-wubi-selectlist-last-selection))
 
 (defun mini-wubi-enable ()
-  (progn
-    (make-local-variable 'default-input-method)
-    (setq-local default-input-method "mini-wubi")
+  (when (equal current-input-method mini-wubi-name)
     (unless mini-wubi-rules-loaded-flag
       (message "Loading mini-wubi rules...")
       (load "mini-wubi-rules")
@@ -348,8 +346,7 @@
       (mini-wubi-set-hooks))))
 
 (defun mini-wubi-disable ()
-  (progn
-    (kill-local-variable 'default-input-method)
+  (when (equal current-input-method mini-wubi-name)
     (kill-local-variable 'mini-wubi-cn-quail-map)
     (kill-local-variable 'mini-wubi-eng-quail-map)
     (kill-local-variable 'mini-wubi-current-lang-state)
