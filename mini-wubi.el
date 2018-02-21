@@ -40,8 +40,12 @@
 (defconst mini-wubi-version "0.1.0")
 ;;quail define package settings,I don't like using defcustom
 (defvar mini-wubi-guidance t)
+
 (defvar mini-wubi-trans-keys
-  '((" " . quail-select-current)))
+  (list
+   (cons (kbd "SPC") 'quail-select-current)
+   (cons (kbd "RET") 'quail-abort-translation)))
+
 (defvar mini-wubi-forget-last-selection nil)
 (defvar mini-wubi-deterministic nil)
 (defvar mini-wubi-use-kbd-translate t)
