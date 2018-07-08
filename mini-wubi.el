@@ -181,6 +181,8 @@
 
 (defun mini-wubi-switch-lang-state ()
   (interactive)
+  (unless (equal current-input-method mini-wubi-name)
+    (user-error "You should activate input method %s first!" mini-wubi-name))
   (if (mini-wubi-in-lang-cn-state)
       (progn
         (mini-wubi-switch-to-lang-state (mini-wubi-lang-eng-state))
@@ -192,6 +194,8 @@
 
 (defun mini-wubi-switch-character-width ()
   (interactive)
+  (unless (equal current-input-method mini-wubi-name)
+    (user-error "You should activate input method %s first!" mini-wubi-name))
   (if (mini-wubi-in-halfwidth)
       (progn
         (mini-wubi-remap-character-width (mini-wubi-fullwidth-state))
