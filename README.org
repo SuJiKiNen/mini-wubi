@@ -33,3 +33,5 @@ changing the layout is unreasonable,so here is my setting for those people stick
    | ¥        | Chinese   |
    | ◑        | Halfwidth |
    | ●        | Fullwidth |
+* Test
+  ~make test~
