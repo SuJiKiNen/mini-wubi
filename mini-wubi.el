@@ -1,13 +1,13 @@
 ;;; mini-wubi.el --- A simple Chinese wubi input method inside Emacs -*- lexical-binding: t; -*-
 ;;; -*- coding: utf-8 -*-
 
-;; Copyright (C) 2017 SuJiKiNen
+;; Copyright (C) 2017-2018 SuJiKiNen
 
 ;; Author: SuJiKiNen <SuJiKiNen@gmail.com>
 ;; URL: https://github.com/SuJiKiNen/mini-wubi
 ;; Keywords:i18n
-;; Version: 0.0.1
-;; Package-Requires: ((emacs "24.4") (popup "0.5.3"))
+;; Version: 1.0.0
+;; Package-Requires: ((emacs "24.4"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -30,7 +30,20 @@
 ;;; Code:
 
 (require 'quail)
-(require 'popup)
+(require 'cl-lib)
+
+(cl-defstruct
+    mini-wubi-item
+  index
+  trans)
+
+(cl-defstruct
+    mini-wubi-selectlist
+  selected
+  items)
+
+(defvar mini-wubi--selectlist nil)
+(defvar mini-wubi-display-function nil)
 
 ;; mini-wubi quail settings
 (defconst mini-wubi-name "mini-wubi")
@@ -57,9 +70,8 @@
 (defvar mini-wubi-conversion-keys nil)
 (defvar mini-wubi-simple nil)
 
-(defvar mini-wubi-rules-loaded-flag nil "flag that tell whether mini-wubi-rules loaded or not.")
-
-(defconst mini-wubi-lang-states '("cn" "eng") "mini wubi input states,cn is short for Chinese,eng for English")
+(defvar mini-wubi-rules-loaded-flag nil "Non-nil means that mini-wubi-rules quail map not loaded yet.")
+(defconst mini-wubi-lang-states '("cn" "eng") "Mini wubi input states,cn is short for Chinese,eng for English.")
 (defconst mini-wubi-width-states '("half" "full" "some characters width states,fullwidth or halfwidth"))
 
 (defvar mini-wubi-current-lang-state (car mini-wubi-lang-states))
@@ -69,20 +81,6 @@
 (defvar mini-wubi-lang-cn-state-indicator "¥")
 (defvar mini-wubi-halfwidth-state-indicator "◑")
 (defvar mini-wubi-fullwidth-state-indicator "●")
-
-(defvar mini-wubi-show-selections-with-frame t "whether to use a frame to show selections under point")
-
-(defface mini-wubi-popup-selection-face
-  '((t (:inherit popup-menu-selection-face)))
-  "Face used for the selection in the popup.")
-
-(defface mini-wubi-popup-face
-  '((t (:inherit popup-menu-face)))
-  "Face used for the popup background.")
-
-(defface mini-wubi-selection-index-face
-  '((t (:inherit popup-summary-face)))
-  "Face used for selection index")
 
 (defun mini-wubi-halfwidth-state ()
   (car mini-wubi-width-states))
@@ -215,38 +213,23 @@
               (quail-defrule-internal key trans map)))
           mini-wubi-width-characters-alist))
 
-(defvar mini-wubi-popup nil)
-(defvar mini-wubi-popup-width 10)
-(defvar mini-wubi-popup-height 20)
-
 (defun mini-wubi-create-selectlist (&rest args)
-  (setq mini-wubi-popup (popup-create (point)
-                                      mini-wubi-popup-width
-                                      mini-wubi-popup-height
-                                      :around t
-                                      :scroll-bar t
-                                      :margin-left 1
-                                      :face 'mini-wubi-popup-face
-                                      :selection-face 'mini-wubi-popup-selection-face
-                                      :summary-face 'mini-wubi-selection-index-face
-                                      )))
+  )
 
-(defun mini-wubi-show-selectlist (&rest args)
-  (popup-draw mini-wubi-popup))
+(defun mini-wubi-show-selectlist (selectlist)
+  (when mini-wubi-display-function selectlist
+        (funcall mini-wubi-display-function selectlist)))
 
-(defun mini-wubi-selectlist-item-format (name index)
-  name)
 
-(defun mini-wubi-selectlist-select (&optional index)
-  (when (and
-         index
-         (numberp index))
-    (popup-select mini-wubi-popup index)))
+(defun mini-wubi-selectlist-select (idx)
+  (when (and idx mini-wubi--selectlist)
+    (setf (mini-wubi-selectlist-selected mini-wubi--selectlist) idx)
+    (mini-wubi-show-selectlist mini-wubi--selectlist)))
 
 (defun mini-wubi-selectlist-select-next ()
   (when quail-current-translations
-      (let ((indices (car quail-current-translations)))
-        (mini-wubi-selectlist-select (car indices)))))
+    (let ((indices (car quail-current-translations)))
+      (mini-wubi-selectlist-select (car indices)))))
 
 (defun mini-wubi-selectlist-select-previous ()
   (when quail-current-translations
@@ -264,27 +247,24 @@
 	    (let* ((indices (car quail-current-translations))
 		         (start (nth 1 indices))
 		         (end (nth 2 indices))
-		         (idx start)
-             (mini-wubi-popup-list '()))
+		         (idx start))
+        (setq mini-wubi--selectlist (make-mini-wubi-selectlist :items '()))
 	      (while (< idx end)
 	        (let ((trans (aref (cdr quail-current-translations) idx))
 		            (current-idx (if (= (- idx start) 9) 0
 				                       (1+ (- idx start)))))
 		        (or (stringp trans)
 		            (setq trans (string trans)))
-            (setq mini-wubi-popup-list (append
-                                        mini-wubi-popup-list
-                                        (list (popup-make-item (mini-wubi-selectlist-item-format trans
-                                                                                                 current-idx)
-                                                               :summary (number-to-string current-idx))))))
-		      (setq idx (1+ idx)))
-        (popup-set-list mini-wubi-popup mini-wubi-popup-list)
-        (mini-wubi-show-selectlist))
-    (popup-set-list mini-wubi-popup '())
-    (mini-wubi-show-selectlist)))
+            (push (make-mini-wubi-item :index current-idx :trans trans)
+                  (mini-wubi-selectlist-items mini-wubi--selectlist)))
+		      (cl-incf idx 1))
+
+        (mini-wubi-show-selectlist mini-wubi--selectlist))
+    (mini-wubi-show-selectlist nil)))
+
 
 (defun mini-wubi-hide-selectlist (&rest args)
-  (popup-delete mini-wubi-popup))
+  )
 
 (quail-define-package
  mini-wubi-name
@@ -305,7 +285,6 @@
  mini-wubi-simple)
 
 (defun mini-wubi-set-hooks ()
-
   (advice-add 'quail-input-method :before
               'mini-wubi-create-selectlist)
 
@@ -316,7 +295,8 @@
               'mini-wubi-hide-selectlist)
 
   (advice-add 'quail-update-guidance :after
-              'mini-wubi-selectlist-last-selection))
+              'mini-wubi-selectlist-last-selection)
+  )
 
 (defun mini-wubi-unset-hooks ()
 
@@ -350,7 +330,7 @@
     (mini-wubi-remap-character-width mini-wubi-current-width-state)
     (mini-wubi-update-mode-line-indicator)
 
-    (when mini-wubi-show-selections-with-frame
+    (when mini-wubi-display-function
       (mini-wubi-set-hooks))))
 
 (defun mini-wubi-disable ()
@@ -361,7 +341,7 @@
     (kill-local-variable 'mini-wubi-current-width-state)
     (mini-wubi-update-mode-line-indicator)
 
-    (when mini-wubi-show-selections-with-frame
+    (when mini-wubi-display-function
       (mini-wubi-unset-hooks))))
 
 (define-minor-mode mini-wubi-mode mini-wubi-doc-string

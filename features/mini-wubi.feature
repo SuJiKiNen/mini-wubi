@@ -29,3 +29,5 @@ Feature:
     When I call "mini-wubi-switch-character-width"
     When I type "q j k l w."
     Then I should see "我是中国人。"
+    When I type "q2b2"
+    Then I should see "金子"

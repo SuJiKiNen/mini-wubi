@@ -15,7 +15,8 @@
 (let ((load-prefer-newer t))
   (require 'mini-wubi)
   (require 'espuds)
-  (require 'ert))
+  (require 'ert)
+  (require 'mini-wubi-popup))
 
 (Setup
  ;; Before anything has run
@@ -29,7 +30,8 @@
                (apply #'error string (append sargs args))
              (signal 'cl-assertion-failed `(,form ,@sargs))))))
 
- (setq default-input-method "mini-wubi"))
+ (setq default-input-method "mini-wubi")
+ (setq mini-wubi-display-function 'mini-wubi-popup-show-selectlist))
 
 (Before
  ;; Before each scenario is run
