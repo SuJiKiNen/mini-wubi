@@ -1,37 +1,38 @@
 * Install
-Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi input method.
-you can treat it as a minor mode,called by =mini-wubi-mode=,
-or treat it as a input method, called by =toggle-input-method=.
-#+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "path/to/mini-wubi")
-  (require 'mini-wubi)
-  (setq default-input-method "mini-wubi")
-#+END_SRC
+  Loading mini-wubi rules is lazy,unless you first time toggled the mini-wubi input method.
+  you can treat it as a minor mode,called by =mini-wubi-mode=,
+  or treat it as a input method, called by =toggle-input-method=.
+  #+BEGIN_SRC emacs-lisp
+    (add-to-list 'load-path "path/to/mini-wubi")
+    (require 'mini-wubi)
+    (setq default-input-method "mini-wubi")
+  #+END_SRC
 
 * Why I use this?
-~quail~ provided a good utility to remap physical keyborad layout to standard ~Qwerty~ keyborad.
-I use [[https://en.wikipedia.org/wiki/Dvorak_Simplified_Keyboard][dvorak layout]] for daily code typing,when I want to type some Chinese characters,I found
-it is annoying to switch layout between ~Dvorak~ and ~Qwerty~,even my keyborad is able to
-switch layouts in a single one keypress,I don't use ~Dvorak layout~ to typing ~Wubi~,I consider
-changing the layout is unreasonable,so here is my setting for those people stick with my side.
-#+BEGIN_SRC emacs-lisp
-(add-to-list 'quail-keyboard-layout-alist
-             (cons "dvorak" (concat "                              "
-				    "  1!2@3#4$5%6^7&8*9(0)[{]}`~  "
-                                    "  '\",<.>pPyYfFgGcCrRlL/?=+    "
-                                    "  aAoOeEuUiIdDhHtTnNsS-_\\|    "
-                                    "  ;:qQjJkKxXbBmMwWvVzZ        "
-				    "                              ")))
-(quail-set-keyboard-layout "dvorak")
-#+END_SRC
+  ~quail~ provided a good utility to remap physical keyborad layout to standard ~Qwerty~ keyborad.
+  I use [[https://en.wikipedia.org/wiki/Dvorak_Simplified_Keyboard][dvorak layout]] for daily code typing,when I want to type some Chinese characters,I found
+  it is annoying to switch layout between ~Dvorak~ and ~Qwerty~,even my keyborad is able to
+  switch layouts in a single one keypress,I don't use ~Dvorak layout~ to typing ~Wubi~,I consider
+  changing the layout is unreasonable,so here is my setting for those people stick with my side.
+  #+BEGIN_SRC emacs-lisp
+    (add-to-list 'quail-keyboard-layout-alist
+                 (cons "dvorak" (concat "                              "
+                                        "  1!2@3#4$5%6^7&8*9(0)[{]}`~  "
+                                        "  '\",<.>pPyYfFgGcCrRlL/?=+    "
+                                        "  aAoOeEuUiIdDhHtTnNsS-_\\|    "
+                                        "  ;:qQjJkKxXbBmMwWvVzZ        "
+                                        "                              ")))
+    (quail-set-keyboard-layout "dvorak")
+  #+END_SRC
 
 * Document
 ** Indicator Notation in mode line
-   | Notation | Meaning   |
-   |----------+-----------|
-   | $        | English   |
-   | ¥        | Chinese   |
-   | ◑        | Halfwidth |
-   | ●        | Fullwidth |
+   | Notation | Meaning   | Unicode name                 |
+   |----------+-----------+------------------------------|
+   | =$=      | English   | Dollar Sign                  |
+   | =¥=      | Chinese   | Yen Sign                     |
+   | =◑=      | Halfwidth | Circle With Right Half Black |
+   | =●=      | Fullwidth | Black Circle                 |
+   #+TBLFM: $3='(capitalize (get-char-code-property (string-to-char (substring $1 1 2)) 'name))
 * Test
   ~make test~
