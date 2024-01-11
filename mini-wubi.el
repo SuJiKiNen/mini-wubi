@@ -36,7 +36,7 @@
 (defconst mini-wubi-name "mini-wubi")
 (defconst mini-wubi-lang "euc-cn")
 (defconst mini-wubi-title "迷雾")
-(defconst mini-wubi-doc-string "A simple Chinese wubi input method inside Emacs")
+(defconst mini-wubi-doc-string "A simple Chinese wubi input method inside Emacs.")
 (defconst mini-wubi-version "0.1.0")
 ;;quail define package settings,I don't like using defcustom
 (defvar mini-wubi-guidance t)
@@ -364,7 +364,7 @@
     (when mini-wubi-show-selections-with-frame
       (mini-wubi-unset-hooks))))
 
-(define-minor-mode mini-wubi-mode mini-wubi-doc-string
+(define-minor-mode mini-wubi-mode nil
   :lighter nil
   :keymap nil
   (if mini-wubi-mode
@@ -374,6 +374,8 @@
     (progn
       (mini-wubi-disable)
       (toggle-input-method))))
+
+(put 'mini-wubi-mode 'function-documentation mini-wubi-doc-string)
 
 (register-input-method "mini-wubi" "euc-cn" 'quail-use-package "mini-wubi" "A simple Chinese wubi input method inside Emacs")
 
